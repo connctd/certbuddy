@@ -52,6 +52,7 @@ func main() {
 	var accountKey crypto.PrivateKey
 	var err error
 	if fileExists(*accountKeyPath) {
+		log.Printf("Loading private key for account from %s", *accountKeyPath)
 		accountKey, err = loadPrivateKey(*accountKeyPath)
 		if err != nil {
 			log.Fatalf("Can't load private account key: %v", err)
@@ -86,11 +87,13 @@ func main() {
 
 	var domainPrivateKey crypto.PrivateKey
 	if fileExists(*keyPath) {
+		log.Printf("Loading private key for domains from %s", *keyPath)
 		domainPrivateKey, err = loadPrivateKey(*keyPath)
 		if err != nil {
 			log.Fatalf("Can't load private key from %s: %v", *keyPath, err)
 		}
 	} else {
+		log.Printf("Private key %s not found. Generating new one", *keyPath)
 		domainPrivateKey, err = rsa.GenerateKey(rand.Reader, *rasKeyLength)
 		if err != nil {
 			log.Fatalf("Can't generate private key: %v", err)
@@ -101,6 +104,7 @@ func main() {
 	}
 
 	if needToObtainFirst {
+		log.Printf("Obtaining new certificate")
 		cert, err := client.ObtainCertificate(issueDomains, domainPrivateKey)
 		if err != nil {
 			log.Fatalf("Failed to obtain signed certificate from CA: %v", err)
@@ -135,6 +139,8 @@ func main() {
 			} else if err != nil {
 				log.Printf("Error checking the certificate: %v", err)
 				errc <- err
+			} else {
+				log.Printf("Certificate is still valid")
 			}
 			// TODO let the application sleep more intelligently
 			log.Println("Waiting 12 hours, before checking again")

@@ -100,3 +100,11 @@ func LoadJsonFromDisk(jsonPath string, data interface{}) error {
 	}
 	return json.Unmarshal(dataBytes, data)
 }
+
+func StoreJsonToDisk(jsonPath string, data interface{}) error {
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(jsonPath, jsonBytes, 0600)
+}

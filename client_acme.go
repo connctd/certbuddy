@@ -53,9 +53,13 @@ func NewAcmeClient(user *User, keyType acme.KeyType) (AutomatedCA, error) {
 		return nil, err
 	}
 	var regData acme.RegistrationResource
-	if err := LoadJsonFromDisk(path.Join(stateDir, "account.meta"), &regData); err != nil {
+	regPath := path.Join(stateDir, "account.meta")
+	if err := LoadJsonFromDisk(regPath, &regData); err != nil {
 		reg, err := client.Register()
 		if err != nil {
+			return nil, err
+		}
+		if err := StoreJsonToDisk(regPath, reg); err != nil {
 			return nil, err
 		}
 		user.registration = reg
