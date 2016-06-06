@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto"
-	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
 	"errors"
@@ -15,7 +14,10 @@ const (
 	letsencryptCaServer = "https://acme-v01.api.letsencrypt.org/directory"
 	stateBaseDir        = "./.letsencrypt"
 	defaultPerm         = 0600
-	NotImplemented      = errors.New("Not implemented")
+)
+
+var (
+	NotImplemented = errors.New("Not implemented")
 )
 
 type User struct {
@@ -41,18 +43,29 @@ func NewAcmeClient(user *User, keyType acme.KeyType) (AutomatedCA, error) {
 	if err != nil {
 		return nil, err
 	}
-	reg, err := client.Register()
+
+	acmeClient := &acmeClient{
+		client: client,
+		user:   user,
+	}
+	stateDir, err := acmeClient.getStateDir()
 	if err != nil {
 		return nil, err
 	}
-	user.registration = reg
-	if err := client.AgreeToTOS(); err != nil {
-		return nil, err
+	var regData acme.RegistrationResource
+	if err := LoadJsonFromDisk(path.Join(stateDir, "account.meta"), &regData); err != nil {
+		reg, err := client.Register()
+		if err != nil {
+			return nil, err
+		}
+		user.registration = reg
+		if err := client.AgreeToTOS(); err != nil {
+			return nil, err
+		}
+	} else {
+		user.registration = &regData
 	}
-	return &acmeClient{
-		client: client,
-		user:   user,
-	}, nil
+	return acmeClient, nil
 }
 
 type acmeClient struct {
@@ -94,9 +107,9 @@ func wrapErr(err error) map[string]error {
 func (a *acmeClient) Renew(cert *x509.Certificate, privKey crypto.PrivateKey) (*x509.Certificate, error) {
 	oldCertResource, err := a.toCertificateResource(cert, privKey)
 	if err != nil {
-		return nil, errr
+		return nil, err
 	}
-	renewedCerts, err := a.client.RenewCertificate(cert, bundle)
+	renewedCerts, err := a.client.RenewCertificate(oldCertResource, true)
 	if err != nil {
 		return nil, err
 	}

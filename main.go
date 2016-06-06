@@ -57,6 +57,7 @@ func main() {
 			log.Fatalf("Can't load private account key: %v", err)
 		}
 	} else {
+		log.Printf("Account key %s does not exists, generating new key", *accountKeyPath)
 		accountKey, err = rsa.GenerateKey(rand.Reader, *rasKeyLength)
 		if err != nil {
 			log.Fatalf("Can't generate new RSA account key: %v", err)

@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"io/ioutil"
@@ -16,10 +17,10 @@ var (
 )
 
 func fileExists(name string) bool {
-	if _, err := os.Stat(name); err != os.ErrNotExist {
-		return true
+	if _, err := os.Stat(name); os.IsNotExist(err) {
+		return false
 	}
-	return false
+	return true
 }
 
 func CreateDirIfNotExists(dirPath string) error {
@@ -58,6 +59,9 @@ func writePEMBlock(data interface{}, keyPath string) error {
 
 func loadPrivateKey(path string) (crypto.PrivateKey, error) {
 	fileData, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
 	return pemBlockToPrivateKey(fileData)
 }
 
@@ -87,4 +91,12 @@ func loadCertificateFromDisk(path string) (*x509.Certificate, error) {
 		return nil, err
 	}
 	return pemBlockToX509Certificate(fileData)
+}
+
+func LoadJsonFromDisk(jsonPath string, data interface{}) error {
+	dataBytes, err := ioutil.ReadFile(jsonPath)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(dataBytes, data)
 }
