@@ -1,8 +1,6 @@
 FROM scratch
 MAINTAINER "Till Klocke"
 
-RUN 
-
 ADD user /
 ADD certs /
 ADD webroot /
@@ -10,5 +8,12 @@ ADD webroot /
 VOLUME ["/certs"]
 VOLUME ["/webroot"]
 
-ADD ../letsencrypthelper /
-CMD /letsencrypthelper -email $EMAIL -domain $DOMAINS
+ADD ./letsencrypthelper-amd64 /
+
+CMD [ "/letsencrypthelper-amd64", \
+  "-accountKey", "/user/account.key", \
+  "-certPath", "/certs/server.crt", \
+  "-keyPath", "/certs/server.key", \
+  "-webroot", "/webroot", \
+  "-email", "$EMAIL", \
+  "-domain", "$DOMAINS" ]

@@ -10,5 +10,6 @@ compile:
 	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -a -installsuffix cgo -o letsencrypthelper-amd64 .
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-s -w" -a -installsuffix cgo -o letsencrypthelper-arm .
 
-image: compile
+docker: compile
+	cp letsencrypthelper-amd64 ./Docker/
 	$(DOCKER) build -t $(TAG) ./Docker
