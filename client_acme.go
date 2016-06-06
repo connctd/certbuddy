@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/providers/http/webroot"
 	"io/ioutil"
 	"path"
 )
@@ -38,7 +39,7 @@ func (u *User) GetPrivateKey() crypto.PrivateKey {
 	return u.PrivateKey
 }
 
-func NewAcmeClient(user *User, keyType acme.KeyType) (AutomatedCA, error) {
+func NewAcmeClient(user *User, keyType acme.KeyType, webrootPath string) (AutomatedCA, error) {
 	client, err := acme.NewClient(letsencryptCaServer, user, keyType)
 	if err != nil {
 		return nil, err
@@ -69,6 +70,16 @@ func NewAcmeClient(user *User, keyType acme.KeyType) (AutomatedCA, error) {
 	} else {
 		user.registration = &regData
 	}
+	provider, err := webroot.NewHTTPProvider(webrootPath)
+	if err != nil {
+		return nil, err
+	}
+	err = client.SetChallengeProvider(acme.HTTP01, provider)
+	if err != nil {
+		return nil, err
+	}
+	client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
+
 	return acmeClient, nil
 }
 

@@ -29,7 +29,7 @@ func CreateDirIfNotExists(dirPath string) error {
 		return nil
 	}
 
-	return os.MkdirAll(dirPath, 0600)
+	return os.MkdirAll(dirPath, 0700)
 }
 
 func toPemBlock(data interface{}) ([]byte, error) {

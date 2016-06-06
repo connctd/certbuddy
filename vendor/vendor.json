@@ -9,8 +9,8 @@
 		},
 		{
 			"path": "github.com/xenolf/lego/acme",
-			"revision": "30a7a8e8821de3532192d1240a45e53c6204f603",
-			"revisionTime": "2016-05-27T13:43:23+02:00"
+			"revision": "204413985ccd7586e6699c7a126bd3fd06ecadb8",
+			"revisionTime": "2016-06-06T14:28:26+02:00"
 		},
 		{
 			"path": "golang.org/x/crypto/ocsp",
