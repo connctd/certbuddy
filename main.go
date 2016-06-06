@@ -21,7 +21,7 @@ var (
 	keyPath         = flag.String("keyPath", "", "Path to the private domain key")
 	certPath        = flag.String("certPath", "", "Path to the domain certificte")
 	renewBeforeFlag = flag.Int("renewBefore", 30, "Renew before Duration before expiration in days")
-	webroot         = flag.String("webroot", "/webroot", "Path to the webroot for the HTTP challenge")
+	webroot         = flag.String("webroot", "", "Path to the webroot for the HTTP challenge")
 	accountKeyPath  = flag.String("accountKey", "", "Path to the private key for the account")
 	rasKeyLength    = flag.Int("rsaLength", 4096, "Specify the length of RSA keys")
 )

@@ -22,7 +22,16 @@ func fileExists(name string) bool {
 	return false
 }
 
-func writePEMBlock(data interface{}, keyPath string) error {
+func CreateDirIfNotExists(dirPath string) error {
+	if fileExists(dirPath) {
+		// TODO check if path is actually a directory
+		return nil
+	}
+
+	return os.MkdirAll(dirPath, 0600)
+}
+
+func toPemBlock(data interface{}) ([]byte, error) {
 	var pemBlock *pem.Block
 	switch key := data.(type) {
 	case *ecdsa.PrivateKey:
@@ -36,15 +45,24 @@ func writePEMBlock(data interface{}, keyPath string) error {
 	}
 
 	pemBytes := pem.EncodeToMemory(pemBlock)
+	return pemBytes, nil
+}
+
+func writePEMBlock(data interface{}, keyPath string) error {
+	pemBytes, err := toPemBlock(data)
+	if err != nil {
+		return err
+	}
 	return ioutil.WriteFile(keyPath, pemBytes, 0600)
 }
 
 func loadPrivateKey(path string) (crypto.PrivateKey, error) {
 	fileData, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	pemBlock, _ := pem.Decode(fileData)
+	return pemBlockToPrivateKey(fileData)
+}
+
+func pemBlockToPrivateKey(pemBlockData []byte) (crypto.PrivateKey, error) {
+	pemBlock, _ := pem.Decode(pemBlockData)
 	switch pemBlock.Type {
 	case "RSA PRIVATE KEY":
 		return x509.ParsePKCS1PrivateKey(pemBlock.Bytes)
@@ -55,14 +73,18 @@ func loadPrivateKey(path string) (crypto.PrivateKey, error) {
 	}
 }
 
+func pemBlockToX509Certificate(pemBlockData []byte) (*x509.Certificate, error) {
+	pemBlock, _ := pem.Decode(pemBlockData)
+	if pemBlock.Type != "CERTIFICATE" {
+		return nil, UnknownPemHeader
+	}
+	return x509.ParseCertificate(pemBlock.Bytes)
+}
+
 func loadCertificateFromDisk(path string) (*x509.Certificate, error) {
 	fileData, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	pemBlock, _ := pem.Decode(fileData)
-	if pemBlock.Type != "CERTIFICATE" {
-		return nil, UnknownPemHeader
-	}
-	return x509.ParseCertificate(pemBlock.Bytes)
+	return pemBlockToX509Certificate(fileData)
 }

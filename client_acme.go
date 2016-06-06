@@ -4,11 +4,18 @@ import (
 	"crypto"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
+	"errors"
 	"github.com/xenolf/lego/acme"
+	"io/ioutil"
+	"path"
 )
 
 const (
 	letsencryptCaServer = "https://acme-v01.api.letsencrypt.org/directory"
+	stateBaseDir        = "./.letsencrypt"
+	defaultPerm         = 0600
+	NotImplemented      = errors.New("Not implemented")
 )
 
 type User struct {
@@ -58,19 +65,76 @@ func (a *acmeClient) ObtainCertificate(domains []string, privKey crypto.PrivateK
 	if len(failures) > 0 {
 		return nil, failures
 	}
-	tlsCert, err := tls.X509KeyPair(certs.Certificate, certs.PrivateKey)
-	// TODO verify that leaf exists
-	failures = make(map[string]error)
+	stateDir, err := a.getStateDir()
 	if err != nil {
-		failures["_"] = err
+		return nil, wrapErr(err)
 	}
-	return tlsCert.Leaf, failures
+	certMetaPath := path.Join(stateDir, "certs.meta")
+	certMetaData, err := json.Marshal(certs)
+	if err != nil {
+		return nil, wrapErr(err)
+	}
+	err = ioutil.WriteFile(certMetaPath, certMetaData, defaultPerm)
+	if err != nil {
+		return nil, wrapErr(err)
+	}
+	x509Cert, err := pemBlockToX509Certificate(certs.Certificate)
+	if err != nil {
+		return nil, wrapErr(err)
+	}
+	return x509Cert, nil
+}
+
+func wrapErr(err error) map[string]error {
+	failures := make(map[string]error)
+	failures["_"] = err
+	return failures
 }
 
 func (a *acmeClient) Renew(cert *x509.Certificate, privKey crypto.PrivateKey) (*x509.Certificate, error) {
-	return nil, nil
+	oldCertResource, err := a.toCertificateResource(cert, privKey)
+	if err != nil {
+		return nil, errr
+	}
+	renewedCerts, err := a.client.RenewCertificate(cert, bundle)
+	if err != nil {
+		return nil, err
+	}
+	return pemBlockToX509Certificate(renewedCerts.Certificate)
 }
 
 func (a *acmeClient) Revoke(cert *x509.Certificate, privKey crypto.PrivateKey) error {
-	return nil
+	return NotImplemented
+}
+
+func (a *acmeClient) getStateDir() (string, error) {
+	dir := path.Join(stateBaseDir, a.user.GetEmail())
+	return dir, CreateDirIfNotExists(dir)
+}
+
+func (a *acmeClient) toCertificateResource(cert *x509.Certificate, privKey crypto.PrivateKey) (acme.CertificateResource, error) {
+	var certMeta acme.CertificateResource
+	stateDir, err := a.getStateDir()
+	if err != nil {
+		return certMeta, err
+	}
+	certMetaPath := path.Join(stateDir, "certs.meta")
+	certMetaData, err := ioutil.ReadFile(certMetaPath)
+	if err != nil {
+		return certMeta, err
+	}
+
+	err = json.Unmarshal(certMetaData, &certMeta)
+	certificatePem, err := toPemBlock(cert)
+	if err != nil {
+		return certMeta, nil
+	}
+	privateKeyPem, err := toPemBlock(privKey)
+	if err != nil {
+		return certMeta, nil
+	}
+
+	certMeta.Certificate = certificatePem
+	certMeta.PrivateKey = privateKeyPem
+	return certMeta, nil
 }
