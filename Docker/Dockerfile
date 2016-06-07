@@ -8,9 +8,9 @@ ADD webroot /
 VOLUME ["/certs"]
 VOLUME ["/webroot"]
 
-ADD ./letsencrypthelper-amd64 /
+ADD ./certbuddy-amd64 /
 
-CMD [ "/letsencrypthelper-amd64", \
+CMD [ "/certbuddy-amd64", \
   "-accountKey", "/user/account.key", \
   "-certPath", "/certs/server.crt", \
   "-keyPath", "/certs/server.key", \
