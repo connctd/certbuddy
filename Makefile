@@ -11,5 +11,5 @@ compile:
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-s -w" -a -installsuffix cgo -o certbuddy-arm .
 
 docker: compile
-	cp letsencrypthelper-amd64 ./Docker/
+	cp certbuddy-amd64 ./Docker/
 	$(DOCKER) build -t $(TAG) ./Docker
