@@ -13,3 +13,4 @@ compile:
 docker: compile
 	cp certbuddy-amd64 ./Docker/
 	$(DOCKER) build -t $(TAG) ./Docker
+	rm ./Docker/certbuddy-amd64
