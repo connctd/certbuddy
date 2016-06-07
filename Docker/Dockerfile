@@ -1,6 +1,8 @@
 FROM scratch
 MAINTAINER "Till Klocke"
 
+ADD ca-certificates.crt /etc/ssl/certs/
+
 ADD user /
 ADD certs /
 ADD webroot /
