@@ -22,6 +22,9 @@ func ConnectConsul(addr string) error {
 }
 
 func RegisterCertsAvailable(serviceName string) error {
+	if ConsulClient == nil {
+		return nil
+	}
 	if serviceName == "" {
 		serviceName = "https-certs"
 	}
@@ -41,13 +44,22 @@ func RegisterCertsAvailable(serviceName string) error {
 }
 
 func DeregisterCertsAvailable() error {
+	if ConsulClient == nil {
+		return nil
+	}
 	return ConsulClient.Agent().ServiceDeregister(serviceId)
 }
 
 func KeepCertsAvailableAlive(note string) error {
+	if ConsulClient == nil {
+		return nil
+	}
 	return ConsulClient.Agent().UpdateTTL(serviceId, note, "pass")
 }
 
 func FailCertsAvailable(note string) error {
+	if ConsulClient == nil {
+		return nil
+	}
 	return ConsulClient.Agent().UpdateTTL(serviceId, note, "fail")
 }
