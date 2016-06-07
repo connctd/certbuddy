@@ -1,16 +1,136 @@
 {
 	"comment": "",
-	"ignore": "test",
+	"ignore": "",
 	"package": [
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/armon/go-radix",
+			"path": "github.com/armon/go-radix",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"path": "github.com/hashicorp/consul/acl",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"path": "github.com/hashicorp/consul/api",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"path": "github.com/hashicorp/consul/consul/structs",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"path": "github.com/hashicorp/consul/testutil",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/go-cleanhttp",
+			"path": "github.com/hashicorp/go-cleanhttp",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/go-msgpack/codec",
+			"path": "github.com/hashicorp/go-msgpack/codec",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/golang-lru",
+			"path": "github.com/hashicorp/golang-lru",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/golang-lru/simplelru",
+			"path": "github.com/hashicorp/golang-lru/simplelru",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/hcl",
+			"path": "github.com/hashicorp/hcl",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/hcl/hcl/ast",
+			"path": "github.com/hashicorp/hcl/hcl/ast",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/hcl/hcl/parser",
+			"path": "github.com/hashicorp/hcl/hcl/parser",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/hcl/hcl/scanner",
+			"path": "github.com/hashicorp/hcl/hcl/scanner",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/hcl/hcl/strconv",
+			"path": "github.com/hashicorp/hcl/hcl/strconv",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/hcl/hcl/token",
+			"path": "github.com/hashicorp/hcl/hcl/token",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/hcl/json/parser",
+			"path": "github.com/hashicorp/hcl/json/parser",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/hcl/json/scanner",
+			"path": "github.com/hashicorp/hcl/json/scanner",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/hcl/json/token",
+			"path": "github.com/hashicorp/hcl/json/token",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
+		{
+			"origin": "github.com/hashicorp/consul/vendor/github.com/hashicorp/serf/coordinate",
+			"path": "github.com/hashicorp/serf/coordinate",
+			"revision": "b83c4ffa846d7bb26f0375d58f680dda7b0601b4",
+			"revisionTime": "2016-06-06T19:21:14-07:00"
+		},
 		{
 			"path": "github.com/miekg/dns",
 			"revision": "48ab6605c66ac797e07f615101c3e9e10e932b66",
 			"revisionTime": "2016-05-12T14:43:16+08:00"
 		},
 		{
+			"path": "github.com/satori/go.uuid",
+			"revision": "f9ab0dce87d815821e221626b772e3475a0d2749",
+			"revisionTime": "2016-03-24T11:22:44Z"
+		},
+		{
 			"path": "github.com/xenolf/lego/acme",
-			"revision": "204413985ccd7586e6699c7a126bd3fd06ecadb8",
-			"revisionTime": "2016-06-06T14:28:26+02:00"
+			"revision": "599eb9a739ee91e8a4df2fca5b56c490ab965d2a",
+			"revisionTime": "2016-06-06T14:13:45+02:00"
+		},
+		{
+			"path": "github.com/xenolf/lego/providers/http/webroot",
+			"revision": "599eb9a739ee91e8a4df2fca5b56c490ab965d2a",
+			"revisionTime": "2016-06-06T14:13:45+02:00"
 		},
 		{
 			"path": "golang.org/x/crypto/ocsp",

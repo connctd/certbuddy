@@ -16,14 +16,16 @@ import (
 )
 
 var (
-	email           = flag.String("email", "", "Specify the email address for the letsencrypt account")
-	domains         = flag.String("domains", "", "Specify a comma seperated list of domains to get a certificate for")
-	keyPath         = flag.String("keyPath", "", "Path to the private domain key")
-	certPath        = flag.String("certPath", "", "Path to the domain certificte")
-	renewBeforeFlag = flag.Int("renewBefore", 30, "Renew before Duration before expiration in days")
-	webrootPath     = flag.String("webroot", "", "Path to the webroot for the HTTP challenge")
-	accountKeyPath  = flag.String("accountKey", "", "Path to the private key for the account")
-	rasKeyLength    = flag.Int("rsaLength", 4096, "Specify the length of RSA keys")
+	email             = flag.String("email", "", "Specify the email address for the letsencrypt account")
+	domains           = flag.String("domains", "", "Specify a comma seperated list of domains to get a certificate for")
+	keyPath           = flag.String("keyPath", "", "Path to the private domain key")
+	certPath          = flag.String("certPath", "", "Path to the domain certificte")
+	renewBeforeFlag   = flag.Int("renewBefore", 30, "Renew before Duration before expiration in days")
+	webrootPath       = flag.String("webroot", "", "Path to the webroot for the HTTP challenge")
+	accountKeyPath    = flag.String("accountKey", "", "Path to the private key for the account")
+	rasKeyLength      = flag.Int("rsaLength", 4096, "Specify the length of RSA keys")
+	consulAddr        = flag.String("consul", "", "Address of the consul agent to connect to (optional)")
+	consulServiceName = flag.String("consulServiceName", "", "Name of the service to register with Consul")
 )
 
 var (
@@ -65,6 +67,12 @@ func main() {
 		}
 		if err := writePEMBlock(accountKey, *accountKeyPath); err != nil {
 			log.Fatalf("Can't write private account key to %s: %v", *accountKeyPath, err)
+		}
+	}
+
+	if *consulAddr != "" {
+		if err := ConnectConsul(*consulAddr); err != nil {
+			log.Fatalf("Can't to connect to Consul Agent: %v", err)
 		}
 	}
 
@@ -115,6 +123,12 @@ func main() {
 	}
 	checker := TimeExpirationChecker{BestBefore: time.Hour * time.Duration(*renewBeforeFlag*24)}
 
+	if *consulAddr != "" {
+		if err := RegisterCertsAvailable(*consulServiceName); err != nil {
+			log.Fatalf("Can't register with Consul: %v", err)
+		}
+	}
+
 	go func() {
 		for {
 			log.Printf("Checking if the certificate is valid for at least %d more days", *renewBeforeFlag)
@@ -142,17 +156,27 @@ func main() {
 			} else {
 				log.Printf("Certificate is still valid")
 			}
+			if err := KeepCertsAvailableAlive(""); err != nil {
+				log.Printf("Can't keep the service alive on Consul: %v", err)
+				errc <- err
+			}
 			// TODO let the application sleep more intelligently
 			log.Println("Waiting 12 hours, before checking again")
 			time.Sleep(time.Hour * 12)
 		}
 	}()
 
-	log.Fatalf("Fatal: %v", <-errc)
+	shutdown(<-errc)
 }
 
 func verifyFlags() error {
 	return nil
+}
+
+func shutdown(err error) {
+	// On Exit deregister this service, so we don't have orphaned service registrations lingering around
+	DeregisterCertsAvailable()
+	log.Fatalf("Fatal: %v", err)
 }
 
 func interrupt() error {
