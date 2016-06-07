@@ -26,6 +26,15 @@ var (
 	rasKeyLength      = flag.Int("rsaLength", 4096, "Specify the length of RSA keys")
 	consulAddr        = flag.String("consul", "", "Address of the consul agent to connect to (optional)")
 	consulServiceName = flag.String("consulServiceName", "", "Name of the service to register with Consul")
+
+	flagNameMap = map[string]*string{
+		"email":          email,
+		"domains":        domains,
+		"keyPath":        keyPath,
+		"certPath":       certPath,
+		"webrootPath":    webrootPath,
+		"accountKeyPath": accountKeyPath,
+	}
 )
 
 var (
@@ -170,6 +179,11 @@ func main() {
 }
 
 func verifyFlags() error {
+	for name, value := range flagNameMap {
+		if *value == "" {
+			return fmt.Errorf("The flag %s may not be empty", name)
+		}
+	}
 	return nil
 }
 
