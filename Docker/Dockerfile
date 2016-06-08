@@ -18,4 +18,4 @@ CMD [ "/certbuddy-amd64", \
   "-keyPath", "/certs/server.key", \
   "-webroot", "/webroot", \
   "-email", "$EMAIL", \
-  "-domain", "$DOMAINS" ]
+  "-domains", "$DOMAINS" ]
