@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path"
 	"strings"
 	"syscall"
 	"time"
@@ -69,7 +70,9 @@ func main() {
 	if err := EnsureParentPathExists(*certPath); err != nil {
 		log.Fatalf("Can't create parent path for certificate: %v", err)
 	}
-	if err := EnsureParentPathExists(*webrootPath); err != nil {
+	// Append an imaginary file name so filepath.Dir returns the correct path in
+	// EnsureParentPathExists
+	if err := EnsureParentPathExists(path.Join(*webrootPath, ".keep")); err != nil {
 		log.Fatalf("Can't create parent directory for webroot: %v", err)
 	}
 
