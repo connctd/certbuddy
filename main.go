@@ -60,6 +60,19 @@ func main() {
 		issueDomains[0] = *domains
 	}
 
+	if err := EnsureParentPathExists(*accountKeyPath); err != nil {
+		log.Fatalf("Can't create parent path for account key: %v", err)
+	}
+	if err := EnsureParentPathExists(*keyPath); err != nil {
+		log.Fatalf("Can't create parent path for private key: %v", err)
+	}
+	if err := EnsureParentPathExists(*certPath); err != nil {
+		log.Fatalf("Can't create parent path for certificate: %v", err)
+	}
+	if err := EnsureParentPathExists(*webrootPath); err != nil {
+		log.Fatalf("Can't create parent directory for webroot: %v", err)
+	}
+
 	var accountKey crypto.PrivateKey
 	var err error
 	if fileExists(*accountKeyPath) {

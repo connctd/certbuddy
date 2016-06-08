@@ -10,6 +10,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 var (
@@ -107,4 +108,12 @@ func StoreJsonToDisk(jsonPath string, data interface{}) error {
 		return err
 	}
 	return ioutil.WriteFile(jsonPath, jsonBytes, 0600)
+}
+
+func EnsureParentPathExists(targetPath string) error {
+	dirPath := filepath.Dir(targetPath)
+	if !fileExists(dirPath) {
+		return os.MkdirAll(dirPath, 0700)
+	}
+	return nil
 }

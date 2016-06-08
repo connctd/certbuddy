@@ -1,6 +1,7 @@
-VERSION=0.1
+VERSION=0.1.1
 
 TAG=connctd/certbuddy\:$(VERSION)
+TAG_LATEST=connctd/certbuddy\:latest
 
 DOCKER=docker
 
@@ -12,5 +13,5 @@ compile:
 
 docker: compile
 	cp certbuddy-amd64 ./Docker/
-	$(DOCKER) build -t $(TAG) ./Docker
+	$(DOCKER) build -t $(TAG) -t $(TAG_LATEST) ./Docker
 	rm ./Docker/certbuddy-amd64
