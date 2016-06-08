@@ -2,12 +2,13 @@ package main
 
 import (
 	"github.com/hashicorp/consul/api"
-	"github.com/satori/go.uuid"
+	//"github.com/satori/go.uuid"
 )
 
 var (
 	ConsulClient *api.Client
-	serviceId    string
+	serviceId    = "https-certs"
+	checkId      = "https-certs-valid"
 )
 
 func ConnectConsul(addr string) error {
@@ -29,23 +30,36 @@ func RegisterCertsAvailable(serviceName string) error {
 		serviceName = "https-certs"
 	}
 
-	serviceId = uuid.NewV4().String()
-	check := &api.AgentServiceCheck{
-		TTL: "13h",
+	//serviceId = uuid.NewV4().String()
+	//checkId = uuid.NewV4().String()
+
+	checkRegistration := &api.AgentCheckRegistration{
+		ID:        checkId,
+		ServiceID: serviceId,
+		Name:      "HTTPs certificates available",
+		AgentServiceCheck: api.AgentServiceCheck{
+			TTL: "46800s", // 13 hours
+		},
 	}
 
 	service := &api.AgentServiceRegistration{
-		ID:    serviceId,
-		Name:  serviceName,
-		Check: check,
+		ID:   serviceId,
+		Name: serviceName,
 	}
 
-	return ConsulClient.Agent().ServiceRegister(service)
+	if err := ConsulClient.Agent().ServiceRegister(service); err != nil {
+		return err
+	}
+
+	return ConsulClient.Agent().CheckRegister(checkRegistration)
 }
 
 func DeregisterCertsAvailable() error {
 	if ConsulClient == nil {
 		return nil
+	}
+	if err := ConsulClient.Agent().CheckDeregister(checkId); err != nil {
+		return err
 	}
 	return ConsulClient.Agent().ServiceDeregister(serviceId)
 }
@@ -54,12 +68,12 @@ func KeepCertsAvailableAlive(note string) error {
 	if ConsulClient == nil {
 		return nil
 	}
-	return ConsulClient.Agent().UpdateTTL(serviceId, note, "pass")
+	return ConsulClient.Agent().UpdateTTL(checkId, note, "pass")
 }
 
 func FailCertsAvailable(note string) error {
 	if ConsulClient == nil {
 		return nil
 	}
-	return ConsulClient.Agent().UpdateTTL(serviceId, note, "fail")
+	return ConsulClient.Agent().UpdateTTL(checkId, note, "fail")
 }

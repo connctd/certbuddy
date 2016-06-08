@@ -148,10 +148,8 @@ func main() {
 	}
 	checker := TimeExpirationChecker{BestBefore: time.Hour * time.Duration(*renewBeforeFlag*24)}
 
-	if *consulAddr != "" {
-		if err := RegisterCertsAvailable(*consulServiceName); err != nil {
-			log.Fatalf("Can't register with Consul: %v", err)
-		}
+	if err := RegisterCertsAvailable(*consulServiceName); err != nil {
+		log.Fatalf("Can't register with Consul: %v", err)
 	}
 
 	go func() {
