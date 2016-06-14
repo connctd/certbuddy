@@ -27,6 +27,7 @@ var (
 	rasKeyLength      = flag.Int("rsaLength", 4096, "Specify the length of RSA keys")
 	consulAddr        = flag.String("consul", "", "Address of the consul agent to connect to (optional)")
 	consulServiceName = flag.String("consulServiceName", "", "Name of the service to register with Consul")
+	once              = flag.Bool("once", false, "Don't keep running in the background")
 
 	flagNameMap = map[string]*string{
 		"email":          email,
@@ -185,6 +186,9 @@ func main() {
 			if err := KeepCertsAvailableAlive(""); err != nil {
 				log.Printf("Can't keep the service alive on Consul: %v", err)
 				errc <- err
+			}
+			if *once {
+				return
 			}
 			// TODO let the application sleep more intelligently
 			log.Println("Waiting 12 hours, before checking again")
