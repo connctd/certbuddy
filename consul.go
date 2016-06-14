@@ -1,13 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"github.com/hashicorp/consul/api"
 	//"github.com/satori/go.uuid"
 )
 
 var (
 	ConsulClient *api.Client
-	serviceId    = "https-certs"
+	serviceId    string
 	checkId      = "https-certs-valid"
 )
 
@@ -30,6 +31,7 @@ func RegisterCertsAvailable(serviceName string) error {
 		serviceName = "https-certs"
 	}
 
+	checkId = fmt.Sprintf("%s-valid", serviceName)
 	//serviceId = uuid.NewV4().String()
 	//checkId = uuid.NewV4().String()
 
@@ -43,7 +45,7 @@ func RegisterCertsAvailable(serviceName string) error {
 	}
 
 	service := &api.AgentServiceRegistration{
-		ID:   serviceId,
+		ID:   serviceName,
 		Name: serviceName,
 	}
 
