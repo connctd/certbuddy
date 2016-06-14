@@ -40,6 +40,8 @@ var (
 
 var (
 	issueDomains []string
+
+	client AutomatedCA
 )
 
 func main() {
@@ -106,10 +108,11 @@ func main() {
 		PrivateKey: accountKey,
 	}
 
-	client, err := NewAcmeClient(user, acme.RSA4096, *webrootPath)
+	/*var err error
+	client, err = NewAcmeClient(user, acme.RSA4096, *webrootPath)
 	if err != nil {
 		log.Fatalf("Can't create ACME client: %v", err)
-	}
+	}*/
 
 	needToObtainFirst := false
 
@@ -138,7 +141,7 @@ func main() {
 
 	if needToObtainFirst {
 		log.Printf("Obtaining new certificate")
-		cert, err := client.ObtainCertificate(issueDomains, domainPrivateKey)
+		cert, err := getClient(user).ObtainCertificate(issueDomains, domainPrivateKey)
 		if err != nil {
 			log.Fatalf("Failed to obtain signed certificate from CA: %v", err)
 		}
@@ -167,7 +170,7 @@ func main() {
 					log.Printf("Can't load private key from %s: %v", *keyPath, err)
 					errc <- err
 				}
-				renewedCert, err := client.Renew(clientCert, domainPrivateKey)
+				renewedCert, err := getClient(user).Renew(clientCert, domainPrivateKey)
 				if err := writePEMBlock(renewedCert, *certPath); err != nil {
 					log.Printf("Can't write renewed certificate to %s: %v", *certPath, err)
 					errc <- err
@@ -190,6 +193,17 @@ func main() {
 	}()
 
 	shutdown(<-errc)
+}
+
+func getClient(user *User) AutomatedCA {
+	if client == nil {
+		var err error
+		client, err = NewAcmeClient(user, acme.RSA4096, *webrootPath)
+		if err != nil {
+			log.Fatalf("Can't create ACME client: %v", err)
+		}
+	}
+	return client
 }
 
 func verifyFlags() error {
