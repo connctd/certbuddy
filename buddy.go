@@ -44,6 +44,7 @@ func (c *CertBuddy) Loop() error {
 			return err
 		}
 	} else {
+		log.Printf("Loading domain key")
 		domainKey, err = c.domainKeyStore.LoadKey()
 	}
 	if err != nil {
@@ -54,11 +55,13 @@ func (c *CertBuddy) Loop() error {
 		needToObtainFirst = true
 	}
 	if needToObtainFirst {
+		log.Printf("Obtaining new certificate")
 		result, failures := c.ca.ObtainCertificate(c.issueDomains, domainKey)
 		if len(failures) > 0 {
 			printFailures(failures)
 			return fmt.Errorf("Failed to obtain cerfificate")
 		}
+		log.Printf("Saving obtained certificate")
 		err = c.certStore.SaveCerts(result.AllCerts())
 		if err != nil {
 			return err
@@ -72,15 +75,21 @@ func (c *CertBuddy) Loop() error {
 	if certs == nil || len(certs) == 0 {
 		return fmt.Errorf("No certificates loaded from certificate store")
 	}
+	log.Printf("Checkig if certificate is still valid")
 	if ok, err := c.checker.IsValid(certs[0]); !ok && err == nil {
+		log.Printf("Certificate needs to be renewed")
 		result, err := c.ca.Renew(certs[0], domainKey)
 		if err != nil {
+			log.Printf("Failed to renew certificate")
 			return err
 		}
+		log.Printf("Certificate has been renewed")
 		if err := c.certStore.SaveCerts(result.AllCerts()); err != nil {
+			log.Printf("Failed to store certificate")
 			return err
 		}
 	} else if err != nil {
+		log.Printf("Failed to check certificate")
 		return err
 	}
 	return nil
