@@ -14,7 +14,8 @@ import (
 )
 
 var (
-	UnknownPemHeader = errors.New("Unknown PEM header value")
+	UnknownPemHeader       = errors.New("Unknown PEM header value")
+	UnparseableCertificate = errors.New("Unparseable certificate")
 )
 
 func fileExists(name string) bool {
@@ -78,15 +79,22 @@ func pemBlockToPrivateKey(pemBlockData []byte) (crypto.PrivateKey, error) {
 	}
 }
 
-func pemBlockToX509Certificate(pemBlockData []byte) (*x509.Certificate, error) {
-	pemBlock, _ := pem.Decode(pemBlockData)
-	if pemBlock.Type != "CERTIFICATE" {
-		return nil, UnknownPemHeader
+func pemBlockToX509Certificate(pemBlockData []byte) ([]*x509.Certificate, error) {
+	pemBlock, remaining := pem.Decode(pemBlockData)
+	certs := make([]*x509.Certificate, 0, 2)
+	for len(remaining) > 0 {
+		if pemBlock.Type == "CERTIFICATE" {
+			cert, err := x509.ParseCertificate(pemBlock.Bytes)
+			if err != nil {
+				return nil, UnparseableCertificate
+			}
+			certs = append(certs, cert)
+		}
 	}
-	return x509.ParseCertificate(pemBlock.Bytes)
+	return certs, nil
 }
 
-func loadCertificateFromDisk(path string) (*x509.Certificate, error) {
+func loadCertificateFromDisk(path string) ([]*x509.Certificate, error) {
 	fileData, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err

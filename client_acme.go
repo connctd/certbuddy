@@ -88,7 +88,7 @@ type acmeClient struct {
 	user   *User
 }
 
-func (a *acmeClient) ObtainCertificate(domains []string, privKey crypto.PrivateKey) (*x509.Certificate, map[string]error) {
+func (a *acmeClient) ObtainCertificate(domains []string, privKey crypto.PrivateKey) (*CAResult, map[string]error) {
 	certs, failures := a.client.ObtainCertificate(domains, true, privKey)
 	if len(failures) > 0 {
 		return nil, failures
@@ -106,11 +106,16 @@ func (a *acmeClient) ObtainCertificate(domains []string, privKey crypto.PrivateK
 	if err != nil {
 		return nil, wrapErr(err)
 	}
-	x509Cert, err := pemBlockToX509Certificate(certs.Certificate)
+	x509Certs, err := pemBlockToX509Certificate(certs.Certificate)
 	if err != nil {
 		return nil, wrapErr(err)
 	}
-	return x509Cert, nil
+	result := &CAResult{}
+	result.Certificate = x509Certs[0]
+	if len(x509Certs) > 1 {
+		result.IssuerChain = x509Certs[1:]
+	}
+	return result, nil
 }
 
 func wrapErr(err error) map[string]error {
@@ -119,7 +124,7 @@ func wrapErr(err error) map[string]error {
 	return failures
 }
 
-func (a *acmeClient) Renew(cert *x509.Certificate, privKey crypto.PrivateKey) (*x509.Certificate, error) {
+func (a *acmeClient) Renew(cert *x509.Certificate, privKey crypto.PrivateKey) (*CAResult, error) {
 	oldCertResource, err := a.toCertificateResource(cert, privKey)
 	if err != nil {
 		return nil, err
@@ -128,7 +133,16 @@ func (a *acmeClient) Renew(cert *x509.Certificate, privKey crypto.PrivateKey) (*
 	if err != nil {
 		return nil, err
 	}
-	return pemBlockToX509Certificate(renewedCerts.Certificate)
+	certs, err := pemBlockToX509Certificate(renewedCerts.Certificate)
+	if err != nil {
+		return nil, err
+	}
+	result := &CAResult{}
+	result.Certificate = certs[0]
+	if len(certs) > 1 {
+		result.IssuerChain = certs[1:]
+	}
+	return result, nil
 }
 
 func (a *acmeClient) Revoke(cert *x509.Certificate, privKey crypto.PrivateKey) error {
