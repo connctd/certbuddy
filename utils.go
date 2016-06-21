@@ -80,15 +80,21 @@ func pemBlockToPrivateKey(pemBlockData []byte) (crypto.PrivateKey, error) {
 }
 
 func pemBlockToX509Certificate(pemBlockData []byte) ([]*x509.Certificate, error) {
-	pemBlock, remaining := pem.Decode(pemBlockData)
+	var pemBlock *pem.Block
+	var remaining = pemBlockData
 	certs := make([]*x509.Certificate, 0, 2)
-	for len(remaining) > 0 {
+
+	for {
+		pemBlock, remaining = pem.Decode(remaining)
 		if pemBlock.Type == "CERTIFICATE" {
 			cert, err := x509.ParseCertificate(pemBlock.Bytes)
 			if err != nil {
-				return nil, UnparseableCertificate
+				return certs, UnparseableCertificate
 			}
 			certs = append(certs, cert)
+		}
+		if len(remaining) == 0 {
+			break
 		}
 	}
 	return certs, nil

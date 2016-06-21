@@ -32,7 +32,6 @@ var (
 	flagNameMap = map[string]*string{
 		"email":          email,
 		"domains":        domains,
-		"keyPath":        keyPath,
 		"certPath":       certPath,
 		"webrootPath":    webrootPath,
 		"accountKeyPath": accountKeyPath,
@@ -43,6 +42,8 @@ var (
 	issueDomains []string
 
 	client AutomatedCA
+
+	notifier Notifier
 )
 
 func main() {
@@ -57,7 +58,7 @@ func main() {
 		errc <- interrupt()
 	}()
 
-	fileStorage := &FileStorage{*keyPath, true}
+	fileStorage := &FileStorage{*certPath, true}
 
 	if strings.Contains(*domains, ",") {
 		issueDomains = strings.Split(*domains, ",")
@@ -68,9 +69,6 @@ func main() {
 
 	if err := EnsureParentPathExists(*accountKeyPath); err != nil {
 		log.Fatalf("Can't create parent path for account key: %v", err)
-	}
-	if err := EnsureParentPathExists(*keyPath); err != nil {
-		log.Fatalf("Can't create parent path for private key: %v", err)
 	}
 	if err := EnsureParentPathExists(*certPath); err != nil {
 		log.Fatalf("Can't create parent path for certificate: %v", err)
@@ -101,8 +99,13 @@ func main() {
 	}
 
 	if *consulAddr != "" {
-		if err := ConnectConsul(*consulAddr); err != nil {
+		notifier, err = NewConsulNotifier(*consulAddr, "https-certs")
+		if err != nil {
 			log.Fatalf("Can't to connect to Consul Agent: %v", err)
+		}
+
+		if err := notifier.RegisterCertsAvailable(); err != nil {
+			log.Fatalf("Can't register notification about certs: %v", err)
 		}
 	}
 
@@ -113,7 +116,7 @@ func main() {
 
 	ca := getClient(user)
 	checker := TimeExpirationChecker{BestBefore: time.Hour * time.Duration(*renewBeforeFlag*24)}
-	buddy, err := NewCertBuddy(fileStorage, fileStorage, ca, checker, issueDomains)
+	buddy, err := NewCertBuddy(fileStorage, fileStorage, ca, notifier, checker, issueDomains)
 	if err != nil {
 		log.Fatalf("Error creating buddy: %v", err)
 	}
@@ -153,7 +156,9 @@ func verifyFlags() error {
 
 func shutdown(err error) {
 	// On Exit deregister this service, so we don't have orphaned service registrations lingering around
-	DeregisterCertsAvailable()
+	if notifier != nil {
+		notifier.DeregisterCertsAvailable()
+	}
 	log.Fatalf("Fatal: %v", err)
 }
 

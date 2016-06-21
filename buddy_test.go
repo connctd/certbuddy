@@ -75,7 +75,7 @@ func TestBuddyNoKeysAndCertificates(t *testing.T) {
 	checker := mockChecker{}
 	issueDomains := []string{"test.example.com"}
 
-	buddy, err := NewCertBuddy(store, store, ca, checker, issueDomains)
+	buddy, err := NewCertBuddy(store, store, ca, nil, checker, issueDomains)
 	assert.Nil(err)
 	assert.NotNil(buddy)
 

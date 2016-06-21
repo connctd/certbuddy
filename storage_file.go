@@ -23,7 +23,7 @@ type FileStorage struct {
 
 func (c *FileStorage) LoadCerts() ([]*x509.Certificate, error) {
 	if c.Concat {
-		certPath := path.Join(c.BasePath, fmt.Sprint("%s.%s", defaultCertBaseName, defaultCertExtension))
+		certPath := path.Join(c.BasePath, fmt.Sprintf("%s.%s", defaultCertBaseName, defaultCertExtension))
 		data, err := ioutil.ReadFile(certPath)
 		if err != nil {
 			return nil, err

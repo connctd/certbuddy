@@ -12,11 +12,12 @@ type CertBuddy struct {
 	certStore      CertStorage
 	domainKeyStore KeyStorage
 	ca             AutomatedCA
+	notifier       Notifier
 	checker        CertificateChecker
 	issueDomains   []string
 }
 
-func NewCertBuddy(certStore CertStorage, domainKeyStore KeyStorage, ca AutomatedCA,
+func NewCertBuddy(certStore CertStorage, domainKeyStore KeyStorage, ca AutomatedCA, notifier Notifier,
 	checker CertificateChecker, issueDomains []string) (*CertBuddy, error) {
 	return &CertBuddy{
 		certStore:      certStore,
@@ -24,6 +25,7 @@ func NewCertBuddy(certStore CertStorage, domainKeyStore KeyStorage, ca Automated
 		ca:             ca,
 		checker:        checker,
 		issueDomains:   issueDomains,
+		notifier:       notifier,
 	}, nil
 }
 
@@ -77,6 +79,11 @@ func (c *CertBuddy) Loop() error {
 	}
 	log.Printf("Checkig if certificate is still valid")
 	if ok, err := c.checker.IsValid(certs[0]); !ok && err == nil {
+		if notifier != nil {
+			if err := notifier.NotifyCertsUnavailable(); err != nil {
+				log.Printf("Can't notify that certs are unavailable: %v", err)
+			}
+		}
 		log.Printf("Certificate needs to be renewed")
 		result, err := c.ca.Renew(certs[0], domainKey)
 		if err != nil {
@@ -88,9 +95,22 @@ func (c *CertBuddy) Loop() error {
 			log.Printf("Failed to store certificate")
 			return err
 		}
+		if notifier != nil {
+			if err := notifier.NotifyCertsAvailable(); err != nil {
+				log.Printf("Can't notify that certs are available after renewal")
+			}
+			if err := notifier.NotifyCertsRenewed(); err != nil {
+				log.Printf("Can't notify that certs are renewed")
+			}
+		}
 	} else if err != nil {
 		log.Printf("Failed to check certificate")
 		return err
+	} else if c.notifier != nil {
+		if err := c.notifier.NotifyCertsAvailable(); err != nil {
+			log.Printf("Can't notify that certs are available")
+			return err
+		}
 	}
 	return nil
 }

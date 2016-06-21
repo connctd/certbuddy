@@ -6,38 +6,34 @@ import (
 	//"github.com/satori/go.uuid"
 )
 
-var (
-	ConsulClient *api.Client
-	serviceId    string
-	checkId      = "https-certs-valid"
-)
-
-func ConnectConsul(addr string) error {
-
-	config := &api.Config{
-		Address: addr,
-		Scheme:  "http",
-	}
-	var err error
-	ConsulClient, err = api.NewClient(config)
-	return err
+type ConsulNotifier struct {
+	client    *api.Client
+	ServiceId string
+	checkId   string
 }
 
-func RegisterCertsAvailable(serviceName string) error {
-	if ConsulClient == nil {
-		return nil
+func NewConsulNotifier(consulAddr string, serviceId string) (Notifier, error) {
+	config := &api.Config{
+		Address: consulAddr,
+		Scheme:  "http",
 	}
-	if serviceName == "" {
-		serviceName = "https-certs"
+	client, err := api.NewClient(config)
+	if err != nil {
+		return nil, err
 	}
+	return &ConsulNotifier{
+		client:    client,
+		ServiceId: serviceId,
+	}, nil
+}
 
-	checkId = fmt.Sprintf("%s-valid", serviceName)
-	//serviceId = uuid.NewV4().String()
-	//checkId = uuid.NewV4().String()
+func (c *ConsulNotifier) RegisterCertsAvailable() error {
+
+	c.checkId = fmt.Sprintf("%s-valid", c.ServiceId)
 
 	checkRegistration := &api.AgentCheckRegistration{
-		ID:        checkId,
-		ServiceID: serviceId,
+		ID:        c.checkId,
+		ServiceID: c.ServiceId,
 		Name:      "HTTPs certificates available",
 		AgentServiceCheck: api.AgentServiceCheck{
 			TTL: "46800s", // 13 hours
@@ -45,37 +41,33 @@ func RegisterCertsAvailable(serviceName string) error {
 	}
 
 	service := &api.AgentServiceRegistration{
-		ID:   serviceName,
-		Name: serviceName,
+		ID:   c.ServiceId,
+		Name: c.ServiceId,
 	}
 
-	if err := ConsulClient.Agent().ServiceRegister(service); err != nil {
+	if err := c.client.Agent().ServiceRegister(service); err != nil {
 		return err
 	}
 
-	return ConsulClient.Agent().CheckRegister(checkRegistration)
+	return c.client.Agent().CheckRegister(checkRegistration)
 }
 
-func DeregisterCertsAvailable() error {
-	if ConsulClient == nil {
-		return nil
-	}
-	if err := ConsulClient.Agent().CheckDeregister(checkId); err != nil {
+func (c *ConsulNotifier) DeregisterCertsAvailable() error {
+	if err := c.client.Agent().CheckDeregister(c.checkId); err != nil {
 		return err
 	}
-	return ConsulClient.Agent().ServiceDeregister(serviceId)
+	return c.client.Agent().ServiceDeregister(c.ServiceId)
 }
 
-func KeepCertsAvailableAlive(note string) error {
-	if ConsulClient == nil {
-		return nil
-	}
-	return ConsulClient.Agent().UpdateTTL(checkId, note, "pass")
+func (c *ConsulNotifier) NotifyCertsAvailable() error {
+	return c.client.Agent().UpdateTTL(c.checkId, "", "pass")
 }
 
-func FailCertsAvailable(note string) error {
-	if ConsulClient == nil {
-		return nil
-	}
-	return ConsulClient.Agent().UpdateTTL(checkId, note, "fail")
+func (c *ConsulNotifier) NotifyCertsUnavailable() error {
+	return c.client.Agent().UpdateTTL(c.checkId, "", "fail")
+}
+
+func (c *ConsulNotifier) NotifyCertsRenewed() error {
+	// TODO find an elegant way to notify nginx via Consul about new certificates
+	return nil
 }

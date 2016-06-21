@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	letsencryptCaServer = "https://acme-v01.api.letsencrypt.org/directory"
+	//letsencryptCaServer = "https://acme-v01.api.letsencrypt.org/directory"
+	letsencryptCaServer = "https://acme-staging.api.letsencrypt.org/directory"
 	stateBaseDir        = "./.letsencrypt"
 	defaultPerm         = 0600
 )
