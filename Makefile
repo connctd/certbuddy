@@ -2,6 +2,7 @@ VERSION=0.2
 
 TAG=connctd/certbuddy\:$(VERSION)
 TAG_LATEST=connctd/certbuddy\:latest
+TAG_DEBUG=connctd/certbuddy:\latest-debug
 
 DOCKER=docker
 
@@ -22,7 +23,7 @@ docker/release: release
 
 docker/debug: debug
 	cp certbuddy-debug-amd64 ./Docker/certbuddy
-	$(DOCKER) build -t $(TAG) -t $(TAG_LATEST) ./Docker
+	$(DOCKER) build -t $(TAG)-debug -t $(TAG_DEBUG) ./Docker
 	rm ./Docker/certbuddy
 
 clean:
