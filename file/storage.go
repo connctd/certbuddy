@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"github.com/connctd/certbuddy"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"path"
 	"path/filepath"
@@ -14,7 +15,7 @@ var (
 	defaultCertExtension = "crt"
 	defaultCertBaseName  = "server"
 
-	defaultKeyName = "server.key"
+	defaultKeyName = "private.key"
 )
 
 type FileStorage struct {
@@ -59,16 +60,24 @@ func (c *FileStorage) SaveCerts(certs []*x509.Certificate) error {
 			pemBytes = append(pemBytes, data...)
 		}
 		certPath := path.Join(c.BasePath, fmt.Sprintf("%s.%s", defaultCertBaseName, defaultCertExtension))
-		return ioutil.WriteFile(certPath, pemBytes, 0600)
+		if err := certbuddy.EnsureParentPathExists(certPath); err != nil {
+			return errors.Wrap(err, "Unable to create parent path for certificate file")
+		}
+		if err := ioutil.WriteFile(certPath, pemBytes, 0600); err != nil {
+			return errors.Wrap(err, "Unable to write concatenated certificate file")
+		}
 	} else {
 		for i, cert := range certs {
 			certFile := path.Join(c.BasePath, fmt.Sprintf("%s%d.%s", defaultCertBaseName, i, defaultCertExtension))
+			if err := certbuddy.EnsureParentPathExists(certFile); err != nil {
+				return errors.Wrap(err, "Unable to create parent path for certificate")
+			}
 			pemBytes, err := certbuddy.ToPemBlock(cert)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "Unable to convert certificate to PEM block")
 			}
 			if err := ioutil.WriteFile(certFile, pemBytes, 0600); err != nil {
-				return err
+				return errors.Wrap(err, "Unable to write certificate file")
 			}
 		}
 	}
@@ -90,7 +99,13 @@ func (c *FileStorage) SaveKey(key crypto.PrivateKey) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(keyPath, pemBlockData, 0600)
+	if err := certbuddy.EnsureParentPathExists(keyPath); err != nil {
+		return errors.Wrap(err, "Unable to create parent path to store key file")
+	}
+	if err := ioutil.WriteFile(keyPath, pemBlockData, 0600); err != nil {
+		return errors.Wrap(err, "Unable to write private key file")
+	}
+	return nil
 }
 
 func (c *FileStorage) CertsExist() bool {
