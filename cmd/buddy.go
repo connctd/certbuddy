@@ -169,7 +169,7 @@ func (b *Buddy) EnsureCerts() error {
 		if err != nil {
 			return errors.Wrap(err, "Unable to load certificates")
 		}
-
+		log.Printf("Checking if the certificate is at least valid for %s", b.config.ValidBefore.String())
 		valid, err := b.checker.IsValid(certs[0])
 		if err != nil {
 			return errors.Wrap(err, "Unable to validate certificate")
