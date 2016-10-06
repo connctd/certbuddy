@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
 	"github.com/connctd/certbuddy"
 	"github.com/connctd/certbuddy/acme"
 	"github.com/connctd/certbuddy/consul"
@@ -35,6 +36,16 @@ type Buddy struct {
 	certStore       certbuddy.CertStorage
 	privateKeyStore certbuddy.KeyStorage
 	accountKeyStore certbuddy.KeyStorage
+}
+
+type dummyRegistry struct{}
+
+func (d dummyRegistry) CertAvailable(cert *x509.Certificate) error {
+	return nil
+}
+
+func (d dummyRegistry) CertsExpired(cert *x509.Certificate) error {
+	return nil
 }
 
 var (
@@ -83,9 +94,14 @@ func NewBuddy(config BuddyConfig) (*Buddy, error) {
 
 	checker := certbuddy.TimeExpirationChecker{BestBefore: config.ValidBefore}
 
-	registry, err := consul.NewConsulRegistry(config.RegistryAddress, config.ServiceName)
-	if err != nil {
-		return nil, errors.Wrap(err, "Unable to connect to Consul Registry")
+	var registry certbuddy.Registry
+	if config.RegistryAddress != "" {
+		registry, err = consul.NewConsulRegistry(config.RegistryAddress, config.ServiceName)
+		if err != nil {
+			return nil, errors.Wrap(err, "Unable to connect to Consul Registry")
+		}
+	} else {
+		registry = dummyRegistry{}
 	}
 
 	return &Buddy{
@@ -136,7 +152,7 @@ func (b *Buddy) EnsureCerts() error {
 		result, errs := b.ca.ObtainCertificate(b.config.Domains, privateKey)
 		if errs != nil {
 			for domain, err := range errs {
-				log.Println("Error for domain %s: %+v", domain, err)
+				log.Printf("Error for domain %s: %+v", domain, err)
 			}
 			return errors.New("Error obtaining new certificate for private key")
 		}
