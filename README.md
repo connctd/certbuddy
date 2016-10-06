@@ -20,9 +20,10 @@ Name | Description | Required | Default
 ---- | ----------- | -------- | -------
 email | Email address of the user account for letsencrypt | Yes | None
 domains | Comma separated list of domains to be included in the certificate | Yes | None
-keyPath | Path to the private key used for the TLS certificate | Yes | None
-certPath | Path to the TLS certificate issued by letsencrypt | Yes | None
-renewBefore | Number of days before the expiration date when certificate will be renewed | No | 30
+keyPath | Path to the directory the private key used for the TLS certificate will be stored | Yes | None
+certPath | Path to the directory the TLS certificate issued by letsencrypt will be stored | Yes | None
+validBefore | Number of days before the expiration date when certificate will be renewed | No | 30
 webroot | Folder to write the proof to. Needs to be accessible by a webserver | Yes | None
 accountKeyPath | Path to the private key for the letsencrypt account | Yes | None
 rsaLength | Length of the RSA key | No | 4096
+background | Keep running in the background | No | False
