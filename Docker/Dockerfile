@@ -10,10 +10,11 @@ ADD webroot /
 VOLUME ["/certs"]
 VOLUME ["/webroot"]
 
-ADD ./certbuddy-amd64 /
+ADD ./certbuddy /
 
-CMD [ "/certbuddy-amd64", \
-  "-accountKey", "/user/account.key", \
+ENTRYPOINT ["/certbuddy"]
+
+CMD [ "-accountKey", "/user/account.key", \
   "-certPath", "/certs/server.crt", \
   "-keyPath", "/certs/server.key", \
   "-webroot", "/webroot", \

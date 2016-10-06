@@ -1,9 +1,10 @@
-package main
+package file
 
 import (
 	"crypto"
 	"crypto/x509"
 	"fmt"
+	"github.com/connctd/certbuddy"
 	"io/ioutil"
 	"path"
 	"path/filepath"
@@ -28,7 +29,7 @@ func (c *FileStorage) LoadCerts() ([]*x509.Certificate, error) {
 		if err != nil {
 			return nil, err
 		}
-		return pemBlockToX509Certificate(data)
+		return certbuddy.PemBlockToX509Certificate(data)
 	} else {
 		certFiles, _ := filepath.Glob(path.Join(c.BasePath, fmt.Sprintf("%s*.%s", defaultCertBaseName, defaultCertExtension)))
 		certs := make([]*x509.Certificate, 0, 2)
@@ -37,7 +38,7 @@ func (c *FileStorage) LoadCerts() ([]*x509.Certificate, error) {
 			if err != nil {
 				return nil, err
 			}
-			cert, err := pemBlockToX509Certificate(data)
+			cert, err := certbuddy.PemBlockToX509Certificate(data)
 			if err != nil {
 				return nil, err
 			}
@@ -51,7 +52,7 @@ func (c *FileStorage) SaveCerts(certs []*x509.Certificate) error {
 	if c.Concat {
 		pemBytes := make([]byte, 0, 2048)
 		for _, cert := range certs {
-			data, err := toPemBlock(cert)
+			data, err := certbuddy.ToPemBlock(cert)
 			if err != nil {
 				return err
 			}
@@ -62,7 +63,7 @@ func (c *FileStorage) SaveCerts(certs []*x509.Certificate) error {
 	} else {
 		for i, cert := range certs {
 			certFile := path.Join(c.BasePath, fmt.Sprintf("%s%d.%s", defaultCertBaseName, i, defaultCertExtension))
-			pemBytes, err := toPemBlock(cert)
+			pemBytes, err := certbuddy.ToPemBlock(cert)
 			if err != nil {
 				return err
 			}
@@ -80,12 +81,12 @@ func (c *FileStorage) LoadKey() (crypto.PrivateKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	return pemBlockToPrivateKey(data)
+	return certbuddy.PemBlockToPrivateKey(data)
 }
 
 func (c *FileStorage) SaveKey(key crypto.PrivateKey) error {
 	keyPath := path.Join(c.BasePath, defaultKeyName)
-	pemBlockData, err := toPemBlock(key)
+	pemBlockData, err := certbuddy.ToPemBlock(key)
 	if err != nil {
 		return err
 	}
@@ -99,5 +100,5 @@ func (c *FileStorage) CertsExist() bool {
 }
 
 func (c *FileStorage) KeyExists() bool {
-	return fileExists(path.Join(c.BasePath, defaultKeyName))
+	return certbuddy.FileExists(path.Join(c.BasePath, defaultKeyName))
 }

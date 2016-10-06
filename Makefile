@@ -5,13 +5,25 @@ TAG_LATEST=connctd/certbuddy\:latest
 
 DOCKER=docker
 
-.PHONY: image
+.PHONY: release debug clean docker/release docker/debug
 
-compile:
-	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -a -installsuffix cgo -o certbuddy-amd64 .
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-s -w" -a -installsuffix cgo -o certbuddy-arm .
+release:
+	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -a -installsuffix cgo -o certbuddy-amd64 ./cmd
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build -ldflags="-s -w" -a -installsuffix cgo -o certbuddy-arm ./cmd
 
-docker: compile
-	cp certbuddy-amd64 ./Docker/
+debug:
+	CGO_ENABLED=0 GOOS=linux go build -tags debug -ldflags="-s -w" -a -installsuffix cgo -o certbuddy-debug-amd64 ./cmd
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 go build -tags debug -ldflags="-s -w" -a -installsuffix cgo -o certbuddy-debug-arm ./cmd
+
+docker/release: release
+	cp certbuddy-amd64 ./Docker/certbuddy
 	$(DOCKER) build -t $(TAG) -t $(TAG_LATEST) ./Docker
-	rm ./Docker/certbuddy-amd64
+	rm ./Docker/certbuddy
+
+docker/debug: debug
+	cp certbuddy-debug-amd64 ./Docker/certbuddy
+	$(DOCKER) build -t $(TAG) -t $(TAG_LATEST) ./Docker
+	rm ./Docker/certbuddy
+
+clean:
+	rm -f certbuddy*

@@ -1,4 +1,4 @@
-package main
+package certbuddy
 
 import (
 	"crypto/x509"

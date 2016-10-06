@@ -1,4 +1,4 @@
-package main
+package certbuddy
 
 import (
 	"crypto"
@@ -18,7 +18,7 @@ var (
 	UnparseableCertificate = errors.New("Unparseable certificate")
 )
 
-func fileExists(name string) bool {
+func FileExists(name string) bool {
 	if _, err := os.Stat(name); os.IsNotExist(err) {
 		return false
 	}
@@ -26,7 +26,7 @@ func fileExists(name string) bool {
 }
 
 func CreateDirIfNotExists(dirPath string) error {
-	if fileExists(dirPath) {
+	if FileExists(dirPath) {
 		// TODO check if path is actually a directory
 		return nil
 	}
@@ -34,7 +34,7 @@ func CreateDirIfNotExists(dirPath string) error {
 	return os.MkdirAll(dirPath, 0700)
 }
 
-func toPemBlock(data interface{}) ([]byte, error) {
+func ToPemBlock(data interface{}) ([]byte, error) {
 	var pemBlock *pem.Block
 	switch key := data.(type) {
 	case *ecdsa.PrivateKey:
@@ -51,23 +51,23 @@ func toPemBlock(data interface{}) ([]byte, error) {
 	return pemBytes, nil
 }
 
-func writePEMBlock(data interface{}, keyPath string) error {
-	pemBytes, err := toPemBlock(data)
+func WritePEMBlock(data interface{}, keyPath string) error {
+	pemBytes, err := ToPemBlock(data)
 	if err != nil {
 		return err
 	}
 	return ioutil.WriteFile(keyPath, pemBytes, 0600)
 }
 
-func loadPrivateKey(path string) (crypto.PrivateKey, error) {
+func LoadPrivateKey(path string) (crypto.PrivateKey, error) {
 	fileData, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	return pemBlockToPrivateKey(fileData)
+	return PemBlockToPrivateKey(fileData)
 }
 
-func pemBlockToPrivateKey(pemBlockData []byte) (crypto.PrivateKey, error) {
+func PemBlockToPrivateKey(pemBlockData []byte) (crypto.PrivateKey, error) {
 	pemBlock, _ := pem.Decode(pemBlockData)
 	switch pemBlock.Type {
 	case "RSA PRIVATE KEY":
@@ -79,7 +79,7 @@ func pemBlockToPrivateKey(pemBlockData []byte) (crypto.PrivateKey, error) {
 	}
 }
 
-func pemBlockToX509Certificate(pemBlockData []byte) ([]*x509.Certificate, error) {
+func PemBlockToX509Certificate(pemBlockData []byte) ([]*x509.Certificate, error) {
 	var pemBlock *pem.Block
 	var remaining = pemBlockData
 	certs := make([]*x509.Certificate, 0, 2)
@@ -100,12 +100,12 @@ func pemBlockToX509Certificate(pemBlockData []byte) ([]*x509.Certificate, error)
 	return certs, nil
 }
 
-func loadCertificateFromDisk(path string) ([]*x509.Certificate, error) {
+func LoadCertificateFromDisk(path string) ([]*x509.Certificate, error) {
 	fileData, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	return pemBlockToX509Certificate(fileData)
+	return PemBlockToX509Certificate(fileData)
 }
 
 func LoadJsonFromDisk(jsonPath string, data interface{}) error {
@@ -126,7 +126,7 @@ func StoreJsonToDisk(jsonPath string, data interface{}) error {
 
 func EnsureParentPathExists(targetPath string) error {
 	dirPath := filepath.Dir(targetPath)
-	if !fileExists(dirPath) {
+	if !FileExists(dirPath) {
 		return os.MkdirAll(dirPath, 0700)
 	}
 	return nil
