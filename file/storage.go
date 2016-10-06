@@ -28,7 +28,10 @@ func (c *FileStorage) LoadCerts() ([]*x509.Certificate, error) {
 		certPath := path.Join(c.BasePath, fmt.Sprintf("%s.%s", defaultCertBaseName, defaultCertExtension))
 		data, err := ioutil.ReadFile(certPath)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "Unable to read concatenated certificate file")
+		}
+		if len(data) == 0 {
+			return nil, errors.New("Empty file")
 		}
 		return certbuddy.PemBlockToX509Certificate(data)
 	} else {
@@ -111,6 +114,7 @@ func (c *FileStorage) SaveKey(key crypto.PrivateKey) error {
 func (c *FileStorage) CertsExist() bool {
 	certFiles, _ := filepath.Glob(path.Join(c.BasePath, fmt.Sprintf("%s*.%s", defaultCertBaseName, defaultCertExtension)))
 	// TODO probably check if certificates are valid
+	// TODO check fir empty file
 	return len(certFiles) > 0
 }
 
