@@ -12,17 +12,17 @@ import (
 )
 
 var (
-	email           = flag.String("email", "", "Specify the email address for the letsencrypt account")
-	domains         = flag.String("domains", "", "Specify a comma seperated list of domains to get a certificate for")
-	keyPath         = flag.String("keyPath", "", "Path to the private domain key")
-	certPath        = flag.String("certPath", "", "Path to the domain certificte")
-	renewBeforeFlag = flag.Int("renewBefore", 30, "Renew before Duration before expiration in days")
-	webrootPath     = flag.String("webroot", "", "Path to the webroot for the HTTP challenge")
-	accountKeyPath  = flag.String("accountKey", "", "Path to the private key for the account")
-	consulAddr      = flag.String("consul", "", "Address of the consul agent to connect to (optional)")
-	background      = flag.Bool("background", false, "Don't keep running in the background")
-	serviceName     = flag.String("serviceName", "tls-certs", "Specify a service name for your service registry")
-	config          = flag.String("config", "", "Specify a config file for multiple accounts (unused at the moment)")
+	email          = flag.String("email", "", "Specify the email address for the letsencrypt account")
+	domains        = flag.String("domains", "", "Specify a comma seperated list of domains to get a certificate for")
+	keyPath        = flag.String("keyPath", "", "Path to the private domain key")
+	certPath       = flag.String("certPath", "", "Path to the domain certificte")
+	validBefore    = flag.Int("validBefore", 30, "Renew before Duration before expiration in days")
+	webrootPath    = flag.String("webroot", "", "Path to the webroot for the HTTP challenge")
+	accountKeyPath = flag.String("accountKey", "", "Path to the private key for the account")
+	consulAddr     = flag.String("consul", "", "Address of the consul agent to connect to (optional)")
+	background     = flag.Bool("background", false, "Don't keep running in the background")
+	serviceName    = flag.String("serviceName", "tls-certs", "Specify a service name for your service registry")
+	config         = flag.String("config", "", "Specify a config file for multiple accounts (unused at the moment)")
 
 	flagNameMap = map[string]*string{
 		"email":          email,
@@ -105,6 +105,7 @@ func buddyConfigFromFlags() (BuddyConfig, error) {
 	buddyConfig.AccountKeyPath = *accountKeyPath
 	buddyConfig.ServiceName = *serviceName
 	buddyConfig.RegistryAddress = *consulAddr
+	buddyConfig.ValidBefore = time.Hour * 24 * time.Duration(*validBefore)
 	return buddyConfig, nil
 }
 
