@@ -117,10 +117,12 @@ func NewBuddy(config BuddyConfig) (*Buddy, error) {
 }
 
 func (b *Buddy) EnsureCerts() error {
+	log.Printf("Ensuring valid certificates for %+v", b.config.Domains)
 	obtainCerts := false
 
 	var privateKey crypto.PrivateKey
 	if !b.privateKeyStore.KeyExists() {
+		log.Println("Private key for ACME account doesn't exist, generating new key")
 		obtainCerts = true
 		privateKey, err := rsa.GenerateKey(rand.Reader, rsaKeyLength)
 		if err != nil {
@@ -142,7 +144,9 @@ func (b *Buddy) EnsureCerts() error {
 	}
 
 	if obtainCerts {
+		log.Println("Obtaining new certificate")
 		if b.ca == nil {
+			log.Println("Creating CA client")
 			var err error
 			b.ca, err = acme.NewAcmeClient(b.user, b.config.WebrootPath)
 			if err != nil {
@@ -160,6 +164,7 @@ func (b *Buddy) EnsureCerts() error {
 			return errors.Wrap(err, "Can't store obtained certificates")
 		}
 	} else {
+		log.Println("Checking existing certificates")
 		certs, err := b.certStore.LoadCerts()
 		if err != nil {
 			return errors.Wrap(err, "Unable to load certificates")
@@ -170,6 +175,7 @@ func (b *Buddy) EnsureCerts() error {
 			return errors.Wrap(err, "Unable to validate certificate")
 		}
 		if !valid {
+			log.Println("Renewing existing certifcate")
 			if b.ca == nil {
 				var err error
 				b.ca, err = acme.NewAcmeClient(b.user, b.config.WebrootPath)
@@ -186,5 +192,6 @@ func (b *Buddy) EnsureCerts() error {
 			}
 		}
 	}
+	log.Printf("Done for %+v", b.config.Domains)
 	return nil
 }

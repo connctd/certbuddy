@@ -9,6 +9,7 @@ import (
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/http/webroot"
 	"io/ioutil"
+	"log"
 	"path"
 )
 
@@ -56,6 +57,7 @@ func NewAcmeClient(user *User, webrootPath string) (certbuddy.AutomatedCA, error
 	var regData acme.RegistrationResource
 	regPath := path.Join(stateDir, "account.meta")
 	if err := certbuddy.LoadJsonFromDisk(regPath, &regData); err != nil {
+		log.Println("Registering new account")
 		reg, err := client.Register()
 		if err != nil {
 			return nil, err
@@ -68,6 +70,7 @@ func NewAcmeClient(user *User, webrootPath string) (certbuddy.AutomatedCA, error
 			return nil, err
 		}
 	} else {
+		log.Println("Using existing account: %+v", regData)
 		user.registration = &regData
 	}
 	provider, err := webroot.NewHTTPProvider(webrootPath)
