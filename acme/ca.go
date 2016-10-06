@@ -70,7 +70,7 @@ func NewAcmeClient(user *User, webrootPath string) (certbuddy.AutomatedCA, error
 			return nil, err
 		}
 	} else {
-		log.Println("Using existing account: %+v", regData)
+		log.Println("Using existing account")
 		user.registration = &regData
 	}
 	provider, err := webroot.NewHTTPProvider(webrootPath)
