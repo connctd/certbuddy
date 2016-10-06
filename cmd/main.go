@@ -41,43 +41,45 @@ func main() {
 
 	errc := make(chan error)
 
-	var configs []BuddyConfig
-	if *config == "" {
-		config, err := buddyConfigFromFlags()
-		if err != nil {
-			log.Fatalf("Can't create valid config from flags and no config file is specified: %+v", err)
-		}
-		configs = []BuddyConfig{config}
-	}
-
-	buddies := make([]*Buddy, 0, 10)
-	for _, config := range configs {
-		buddy, err := NewBuddy(config)
-		if err != nil {
-			log.Fatalf("Unable to create certbuddy instance: %+v", err)
-		}
-		buddies = append(buddies, buddy)
-	}
-
 	go func() {
 		errc <- interrupt()
 	}()
 
-	for _, buddy := range buddies {
-		if err := buddy.EnsureCerts(); err != nil {
-			errc <- err
+	go func() {
+		var configs []BuddyConfig
+		if *config == "" {
+			config, err := buddyConfigFromFlags()
+			if err != nil {
+				log.Fatalf("Can't create valid config from flags and no config file is specified: %+v", err)
+			}
+			configs = []BuddyConfig{config}
 		}
-	}
 
-	// We want to run continously, for example in Docker
-	if !*once {
-		time.Sleep(time.Hour * 24)
+		buddies := make([]*Buddy, 0, 10)
+		for _, config := range configs {
+			buddy, err := NewBuddy(config)
+			if err != nil {
+				log.Fatalf("Unable to create certbuddy instance: %+v", err)
+			}
+			buddies = append(buddies, buddy)
+		}
+
 		for _, buddy := range buddies {
 			if err := buddy.EnsureCerts(); err != nil {
 				errc <- err
 			}
 		}
-	}
+
+		// We want to run continously, for example in Docker
+		if !*once {
+			time.Sleep(time.Hour * 24)
+			for _, buddy := range buddies {
+				if err := buddy.EnsureCerts(); err != nil {
+					errc <- err
+				}
+			}
+		}
+	}()
 
 	shutdown(<-errc)
 }
