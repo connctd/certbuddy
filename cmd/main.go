@@ -20,7 +20,7 @@ var (
 	webrootPath     = flag.String("webroot", "", "Path to the webroot for the HTTP challenge")
 	accountKeyPath  = flag.String("accountKey", "", "Path to the private key for the account")
 	consulAddr      = flag.String("consul", "", "Address of the consul agent to connect to (optional)")
-	once            = flag.Bool("once", true, "Don't keep running in the background")
+	background      = flag.Bool("background", false, "Don't keep running in the background")
 	serviceName     = flag.String("serviceName", "tls-certs", "Specify a service name for your service registry")
 	config          = flag.String("config", "", "Specify a config file for multiple accounts (unused at the moment)")
 
@@ -66,12 +66,13 @@ func main() {
 
 		for _, buddy := range buddies {
 			if err := buddy.EnsureCerts(); err != nil {
+				log.Printf("Error ensuring valid certificates: %+v", err)
 				errc <- err
 			}
 		}
 
 		// We want to run continously, for example in Docker
-		if !*once {
+		if *background {
 			log.Println("Sleeping for 24 hours")
 			time.Sleep(time.Hour * 24)
 			for _, buddy := range buddies {
