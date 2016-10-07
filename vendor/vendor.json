@@ -118,11 +118,6 @@
 			"revisionTime": "2016-05-12T14:43:16+08:00"
 		},
 		{
-			"path": "github.com/satori/go.uuid",
-			"revision": "f9ab0dce87d815821e221626b772e3475a0d2749",
-			"revisionTime": "2016-03-24T11:22:44Z"
-		},
-		{
 			"path": "github.com/xenolf/lego/acme",
 			"revision": "599eb9a739ee91e8a4df2fca5b56c490ab965d2a",
 			"revisionTime": "2016-06-06T14:13:45+02:00"
@@ -136,11 +131,6 @@
 			"path": "golang.org/x/crypto/ocsp",
 			"revision": "beef0f4390813b96e8e68fd78570396d0f4751fc",
 			"revisionTime": "2015-11-15T11:40:09-08:00"
-		},
-		{
-			"path": "golang.org/x/net/idna",
-			"revision": "dfd9ed699ea197b58a32e0d1dcfa2be66f127ec4",
-			"revisionTime": "2016-05-26T10:07:17+09:00"
 		},
 		{
 			"path": "gopkg.in/square/go-jose.v1",
@@ -157,5 +147,6 @@
 			"revision": "e3f973b66b91445ec816dd7411ad1b6495a5a2fc",
 			"revisionTime": "2016-05-02T14:53:29-07:00"
 		}
-	]
+	],
+	"rootPath": "github.com/connctd/certbuddy"
 }
